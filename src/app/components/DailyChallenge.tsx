@@ -3,18 +3,40 @@ import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Zap, Clock, TrendingUp } from "lucide-react";
 
+type Choice = {
+  text: string;
+  impact: string;
+  isCorrect: boolean;
+  points: number;
+};
+
+type Step = {
+  situation: string;
+  question: string;
+  choices: Choice[];
+};
+
 export function DailyChallenge() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [userChoices, setUserChoices] = useState<number[]>([]);
 
-  const scenario = {
+  const scenario: {
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    difficulty: string;
+    potentialPoints: number;
+    steps: Step[];
+  } = {
     id: "paycheck",
     title: "Paycheck Split Decision",
     description: "You just got paid $2,000. Time to decide where it goes.",
     icon: "💰",
     difficulty: "Medium",
+    potentialPoints: 10,
     steps: [
       {
         situation: "You just got paid $2,000. Your rent is $800 due in 3 days, you have $150 in bills, and your friend invited you to a concert this weekend for $120.",
@@ -24,16 +46,19 @@ export function DailyChallenge() {
             text: "Pay rent immediately ($800)",
             impact: "Safe choice! Always prioritize housing first.",
             isCorrect: true,
+            points: 5,
           },
           {
             text: "Buy concert tickets first ($120)",
             impact: "Risky move. Entertainment before rent is dangerous.",
             isCorrect: false,
+            points: -3,
           },
           {
             text: "Split it evenly across everything",
             impact: "Bad idea. You won't have enough for rent on time.",
             isCorrect: false,
+            points: -5,
           },
         ],
       },
@@ -45,16 +70,19 @@ export function DailyChallenge() {
             text: "Bills $150, Savings $500, Spending $550",
             impact: "Excellent! You covered essentials and built your emergency fund.",
             isCorrect: true,
+            points: 5,
           },
           {
             text: "Bills $150, Savings $50, Spending $1,000",
             impact: "Risky. You're not building financial stability.",
             isCorrect: false,
+            points: -3,
           },
           {
             text: "All to savings ($1,200)",
             impact: "Bad move. You still have bills due!",
             isCorrect: false,
+            points: -5,
           },
         ],
       },
@@ -81,15 +109,13 @@ export function DailyChallenge() {
       }, 1500);
     } else {
       setTimeout(() => {
-        setCurrentStep(currentStep + 1);
+        setCurrentStep((step) => step + 1);
         setSelectedChoice(null);
       }, 1500);
     }
   };
 
   const confirmed = userChoices.length > currentStep;
-  const selectedChoiceData = selectedChoice !== null ? currentStepData.choices[selectedChoice] : null;
-  const confirmedChoiceData = confirmed ? currentStepData.choices[userChoices[currentStep]] : null;
 
   return (
     <div className="min-h-full p-4 pb-6">
@@ -201,7 +227,10 @@ export function DailyChallenge() {
                     className="mt-3 pt-3 border-t border-white/20"
                   >
                     <p className="text-sm opacity-90">{choice.impact}</p>
-                    <p className="text-xs mt-1 font-semibold">+{choice.points} points</p>
+                    <p className="text-xs mt-1 font-semibold">
+                      {choice.points >= 0 ? "+" : ""}
+                      {choice.points} points
+                    </p>
                   </motion.div>
                 )}
               </motion.button>
